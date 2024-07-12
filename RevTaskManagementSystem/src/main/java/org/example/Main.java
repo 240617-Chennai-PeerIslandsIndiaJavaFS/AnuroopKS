@@ -21,7 +21,8 @@ public class Main {
         EffortCalculationService effortCalculationService= new EffortCalculationService();
         TaskService taskService= new TaskService();
         MessageService messageService=new MessageService();
-        UserController userController = new UserController(userService, clientsService, projectTeamsService, projectTeamMembersService, projectService, milestoneService, effortCalculationService, taskService,messageService,scanner);
+        TimestampsService timestampsService= new TimestampsService();
+        UserController userController = new UserController(userService, clientsService, projectTeamsService, projectTeamMembersService, projectService, milestoneService, effortCalculationService, taskService,messageService,timestampsService,scanner);
 
         userController.run();
     }

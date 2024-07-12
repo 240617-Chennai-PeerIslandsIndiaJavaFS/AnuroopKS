@@ -1,52 +1,34 @@
 package org.example.models;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 public class Timestamps {
-    private int timestampId;
-    private int taskId;
-    private int milestoneId;
-    private LocalDateTime timestamp;
+    private int timestamp_id;
+    private int task_id;
+    private Timestamp time;
 
-    public Timestamps() {}
-
-    public Timestamps(int timestampId, int taskId, int milestoneId, LocalDateTime timestamp) {
-        this.timestampId = timestampId;
-        this.taskId = taskId;
-        this.milestoneId = milestoneId;
-        this.timestamp = timestamp;
-    }
-
+    // getters and setters
     public int getTimestampId() {
-        return timestampId;
+        return timestamp_id;
     }
 
     public void setTimestampId(int timestampId) {
-        this.timestampId = timestampId;
+        this.timestamp_id = timestampId;
     }
 
     public int getTaskId() {
-        return taskId;
+        return task_id;
     }
 
     public void setTaskId(int taskId) {
-        this.taskId = taskId;
+        this.task_id = taskId;
     }
 
-    public int getMilestoneId() {
-        return milestoneId;
+    public Timestamp getTime() {
+        return time;
     }
 
-    public void setMilestoneId(int milestoneId) {
-        this.milestoneId = milestoneId;
+    public void setTime(Timestamp time) {
+        this.time = time;
     }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
 }

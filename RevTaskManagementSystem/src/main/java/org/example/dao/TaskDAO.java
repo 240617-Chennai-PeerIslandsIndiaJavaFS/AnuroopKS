@@ -2,6 +2,8 @@ package org.example.dao;
 
 import org.example.connection.DBConnection;
 import org.example.models.Task;
+import org.example.models.Timestamps;
+import org.example.service.TimestampsService;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -49,7 +51,18 @@ public class TaskDAO {
         }
         return tasks;
     }
-
+    private Task mapResultSetToTask(ResultSet resultSet) throws SQLException {
+        Task task = new Task();
+        task.setTaskId(resultSet.getInt("task_id"));
+        task.setTaskName(resultSet.getString("task_name"));
+        task.setTaskDescription(resultSet.getString("task_description"));
+        task.setTaskStartDate(resultSet.getDate("task_start_date"));
+        task.setTaskEndDate(resultSet.getDate("task_end_date"));
+        task.setProjectId(resultSet.getInt("project_id"));
+        task.setAssignedTo(resultSet.getInt("assigned_to"));
+        task.setTaskStatus(Task.TaskStatus.valueOf(resultSet.getString("task_status")));
+        return task;
+    }
     public Task getTaskById(int taskId) {
         String query = "SELECT * FROM tasks WHERE task_id = ?";
         try (Connection connection = DBConnection.getConnection();
@@ -106,18 +119,7 @@ public class TaskDAO {
         }
     }
 
-    private Task mapResultSetToTask(ResultSet resultSet) throws SQLException {
-        Task task = new Task();
-        task.setTaskId(resultSet.getInt("task_id"));
-        task.setTaskName(resultSet.getString("task_name"));
-        task.setTaskDescription(resultSet.getString("task_description"));
-        task.setTaskStartDate(resultSet.getDate("task_start_date"));
-        task.setTaskEndDate(resultSet.getDate("task_end_date"));
-        task.setProjectId(resultSet.getInt("project_id"));
-        task.setAssignedTo(resultSet.getInt("assigned_to"));
-        task.setTaskStatus(Task.TaskStatus.valueOf(resultSet.getString("task_status"))); // Convert string to enum
-        return task;
-    }
+
     public List<Task> getTasksByUserId(int userId) throws SQLException {
         List<Task> tasks = new ArrayList<>();
         String query = "SELECT * FROM tasks WHERE assigned_to = ?";
@@ -139,5 +141,17 @@ public class TaskDAO {
             }
         }
         return tasks;
+    }
+    public static void updateTaskStatus(int taskId, String status) throws SQLException {
+        String query = "UPDATE tasks SET task_status = ? WHERE task_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, status);
+            stmt.setInt(2, taskId);
+            stmt.executeUpdate();
+        }
+    }
+    public List<Timestamps> getTaskHistory(int taskId) {
+        return TimestampsService.getTimestampsByTaskId(taskId);
     }
 }

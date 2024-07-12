@@ -2,8 +2,11 @@ package org.example.service;
 
 import org.example.dao.TaskDAO;
 import org.example.models.Task;
+import org.example.models.Timestamps;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 public class TaskService {
@@ -17,23 +20,27 @@ public class TaskService {
         return taskDAO.addTask(task);
     }
 
-    public Task getTaskById(int taskId) throws SQLException {
-        return taskDAO.getTaskById(taskId);
-    }
-
     public Task getTaskByName(String taskName) throws SQLException {
         return taskDAO.getTaskByName(taskName);
     }
 
-    public boolean updateTask(Task task) throws SQLException {
-        return taskDAO.updateTask(task);
-    }
-
-    public List<Task> getTasksByProjectId(int projectId) throws SQLException {
+    public List<Task> getTasksByProjectId(int projectId) {
         return taskDAO.getTasksByProjectId(projectId);
     }
 
     public List<Task> getTasksByUserId(int userId) throws SQLException {
         return taskDAO.getTasksByUserId(userId);
+    }
+    public void updateTaskStatus(int taskId, String status) {
+        try {
+            TaskDAO.updateTaskStatus(taskId, status);
+
+            Timestamps timestamp = new Timestamps();
+            timestamp.setTaskId(taskId);
+            timestamp.setTime(new Timestamp(new Date().getTime()));
+            TimestampsService.addTimestamp(timestamp);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

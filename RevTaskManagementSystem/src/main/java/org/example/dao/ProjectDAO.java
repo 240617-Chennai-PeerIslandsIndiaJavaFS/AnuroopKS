@@ -95,6 +95,7 @@ public class ProjectDAO {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 Project project = new Project();
+                project.setProjectId(rs.getInt("project_id"));
                 project.setProjectName(rs.getString("project_name"));
                 project.setProjectDescription(rs.getString("project_description"));
                 project.setStartDate(rs.getDate("start_date"));

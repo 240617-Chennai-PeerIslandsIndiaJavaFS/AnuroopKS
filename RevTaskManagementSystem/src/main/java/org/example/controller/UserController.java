@@ -27,10 +27,11 @@ public class UserController {
     private EffortCalculationService effortCalculationService;
     private TaskService taskService;
     private MessageService messageService;
+    private TimestampsService timestampsService;
     private Scanner scanner;
     private UserModels.UserRole userRole;
 
-    public UserController(UserService userService, ClientsService clientsService, ProjectTeamsService projectTeamsService, ProjectTeamMembersService projectTeamMembersService, ProjectService projectService, MilestoneService milestoneService, EffortCalculationService effortCalculationService, TaskService taskService, MessageService messageService, Scanner scanner) throws SQLException {
+    public UserController(UserService userService, ClientsService clientsService, ProjectTeamsService projectTeamsService, ProjectTeamMembersService projectTeamMembersService, ProjectService projectService, MilestoneService milestoneService, EffortCalculationService effortCalculationService, TaskService taskService, MessageService messageService, TimestampsService timestampsService, Scanner scanner) throws SQLException {
         this.userService = userService;
         this.clientsService = clientsService;
         this.projectTeamsService = projectTeamsService;
@@ -40,6 +41,7 @@ public class UserController {
         this.effortCalculationService = effortCalculationService;
         this.taskService = taskService;
         this.messageService = messageService;
+        this.timestampsService=timestampsService;
         this.scanner = scanner;
         askForRole();
     }
@@ -181,8 +183,9 @@ public class UserController {
             System.out.println("2. Manage Project Teams");
             System.out.println("3. Manage Projects");
             System.out.println("4. Update password");
-            System.out.println("5. Messages"); // New option
-            System.out.println("6. Logout");
+            System.out.println("5. Messages");
+            System.out.println("6. View Project History"); // New option
+            System.out.println("7. Logout");
             System.out.print("Choose your option: ");
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -200,9 +203,12 @@ public class UserController {
                     updatePassword(user);
                     break;
                 case 5:
-                    messagesMenu(user); // New method
+                    messagesMenu(user);
                     break;
                 case 6:
+                    viewProjectHistory(); // New method
+                    break;
+                case 7:
                     logout(user);
                     return;
                 default:
@@ -210,7 +216,6 @@ public class UserController {
             }
         }
     }
-
     private void teamMemberMenu(UserModels.User user) throws SQLException {
         while (true) {
             System.out.println("Team Member Menu:");
@@ -420,7 +425,8 @@ public class UserController {
             task.setTaskEndDate(Date.valueOf(LocalDate.now()));
         }
 
-        taskService.updateTask(task);
+        // Update task status and save timestamp
+        taskService.updateTaskStatus(task.getTaskId(), newStatus.name());
         LOGGER.info("Task status updated successfully.");
     }
 
@@ -1138,5 +1144,46 @@ public class UserController {
         userService.updateUser(user);
         LOGGER.info("You have been logged out.");
         askForRole();
+    }
+    private void viewProjectHistory() throws SQLException {
+        System.out.print("Enter project name: ");
+        String projectName = scanner.nextLine();
+        Project project = projectService.getProjectByName(projectName);
+
+        if (project == null) {
+            LOGGER.warn("Project not found.");
+            return;
+        }
+
+        List<Task> tasks = taskService.getTasksByProjectId(project.getProjectId());
+        if (tasks == null || tasks.isEmpty()) {
+            LOGGER.info("No tasks found for this project.");
+            return;
+        }
+
+        System.out.println("Project History for: " + projectName);
+        for (Task task : tasks) {
+            UserModels.User assignedUser = userService.getUserById(task.getAssignedTo());
+            String assignedUserName = (assignedUser != null) ? assignedUser.getUser_name() : "Unknown";
+
+            System.out.println("Task Name: " + task.getTaskName());
+            System.out.println("Assigned To: " + assignedUserName);
+            System.out.println("Task Status: " + task.getTaskStatus());
+
+            List<Timestamps> timestamps = TimestampsService.getTimestampsByTaskId(task.getTaskId());
+            if (timestamps == null || timestamps.isEmpty()) {
+                System.out.println("No history found for this task.");
+            } else {
+                System.out.println("History:");
+                String[] statuses = {"Assigned", "In_Progress", "Completed", "On_Hold", "Cancelled"};
+                int statusIndex = 0;
+                for (Timestamps timestamp : timestamps) {
+                    System.out.println("  - Time: " + timestamp.getTime());
+                    System.out.println("  - Status: " + statuses[statusIndex % statuses.length]);
+                    statusIndex++;
+                }
+            }
+            System.out.println("--------------------------------------------------");
+        }
     }
 }
